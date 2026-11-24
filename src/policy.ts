@@ -92,7 +92,9 @@ export function decide(claims: Claims, req: Request, rules: Rule[] = RULES): Dec
     return { ok: false, reason: "request must name at least one permission" };
   }
   for (const [perm, level] of Object.entries(perms)) {
-    const max = rule.permissions[perm];
+    // Own properties only: a lookup like permissions["constructor"] would otherwise
+    // find Object.prototype members and slip past the maximum check.
+    const max = Object.hasOwn(rule.permissions, perm) ? rule.permissions[perm] : undefined;
     if (!max) return { ok: false, reason: `permission ${perm} is not allowed for ${rule.name}` };
     if (level !== "read" && level !== "write") {
       return { ok: false, reason: `permission ${perm} has invalid level ${String(level)}` };
