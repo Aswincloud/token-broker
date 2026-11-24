@@ -136,6 +136,13 @@ test("refuses extra repositories, extra permissions and escalation", () => {
   assert.equal(decide(claims(), { repositories: [".github"], permissions: { metadata: "write" } }).ok, false);
 });
 
+test("refuses inherited property names as permissions", () => {
+  for (const name of ["constructor", "toString", "hasOwnProperty", "__proto__"]) {
+    const req = JSON.parse(`{"repositories":[".github"],"permissions":{"${name}":"write"}}`);
+    assert.equal(decide(claims(), req).ok, false, name);
+  }
+});
+
 test("refuses empty or malformed requests", () => {
   assert.equal(decide(claims(), { repositories: [], permissions: { contents: "read" } }).ok, false);
   assert.equal(decide(claims(), { repositories: [".github"], permissions: {} }).ok, false);
